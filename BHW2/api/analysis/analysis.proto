@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto ;
+
+option go_package = "github.com/w1sq/SWE/BHW2/api/analysis;analysis";
+
+service AnalysisService {
+rpc AnalyzeFile(AnalyzeFileRequest) returns (AnalyzeFileResponse)   ;
+rpc GenerateWordCloud(WordCloudRequest) returns (WordCloudResponse) ;
+}
+
+message AnalyzeFileRequest {
+string file_id = 1           ;
+}
+
+message AnalyzeFileResponse {
+int32 paragraphs = 1          ;
+int32 words = 2               ;
+int32 characters = 3          ;
+}
+
+message WordCloudRequest {
+string file_id = 1         ;
+}
+
+message WordCloudResponse {
+bytes image = 1             ; // PNG image bytes
+}

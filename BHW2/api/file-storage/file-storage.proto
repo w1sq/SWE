@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto ;
+
+option go_package = "github.com/w1sq/SWE/BHW2/api/file-storage;filestorage";
+
+service FileStoringService {
+rpc StoreFile(StoreFileRequest) returns (StoreFileResponse) ;
+rpc GetFile(GetFileRequest) returns (GetFileResponse)       ;
+}
+
+message StoreFileRequest {
+string filename = 1        ;
+bytes content = 2          ;
+}
+
+message StoreFileResponse {
+string file_id = 1          ;
+}
+
+message GetFileRequest {
+string file_id = 1       ;
+}
+
+message GetFileResponse {
+string filename = 1       ;
+bytes content = 2         ;
+}

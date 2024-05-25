@@ -1,0 +1,57 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - FILE_STORAGE_ADDR=file-storage:50051
+      - ANALYSIS_ADDR=analysis:50052
+    depends_on:
+      - file-storage
+      - analysis
+
+  file-storage:
+    build:
+      context: .
+      dockerfile: file-storage/Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5433
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=files_db
+    ports:
+      - "50051:50051"
+    depends_on:
+      - postgres
+
+  analysis:
+    build:
+      context: .
+      dockerfile: analysis/Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5433
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=analysis_db
+    ports:
+      - "50052:50052"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5433"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

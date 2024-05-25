@@ -1,0 +1,131 @@
+definitions:
+  handler.AnalyzeResponse:
+    properties:
+      characters:
+        type: integer
+      paragraphs:
+        type: integer
+      words:
+        type: integer
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handler.UploadResponse:
+    properties:
+      file_id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /analyze/{id}:
+    post:
+      description: Requests analysis of a file by its ID from the analysis service
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.AnalyzeResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Analyze a file
+      tags:
+      - analysis
+  /file/{id}:
+    get:
+      description: Downloads a file by its ID from the file storage service
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Download a file
+      tags:
+      - files
+  /upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a file and stores it in the file storage service
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Upload a file
+      tags:
+      - files
+  /wordcloud/{id}:
+    get:
+      description: Generates a word cloud image for the file content using QuickChart
+        API via analysis service
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get word cloud image for a file
+      tags:
+      - analysis
+swagger: "2.0"
