@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from typing import List, Dict
-from models import TransactionType, BankAccount, Category, Operation
+
+from models import TransactionType
 from container import FinanceModuleContainer
 from commands import GetOperationsCommand, PerformanceDecorator
 from performance import measure_execution_time
@@ -205,7 +205,6 @@ class ConsoleApp:
             else:
                 print("Неверный выбор! Пожалуйста, попробуйте снова.")
 
-    # Функции для работы со счетами
     @measure_execution_time("Создание счета")
     def create_account(self):
         try:
@@ -289,7 +288,6 @@ class ConsoleApp:
         except ValueError:
             print("Ошибка: ID должен быть числом")
 
-    # Функции для работы с категориями
     @measure_execution_time("Создание категории")
     def create_category(self):
         try:
@@ -380,11 +378,9 @@ class ConsoleApp:
         except ValueError:
             print("Ошибка: ID должен быть числом")
 
-    # Функции для работы с операциями
     @measure_execution_time("Создание операции")
     def create_operation(self):
         try:
-            # Выбор типа операции
             print("Выберите тип операции:")
             print("1. Доход")
             print("2. Расход")
@@ -398,7 +394,6 @@ class ConsoleApp:
                 print("Неверный выбор типа операции!")
                 return
 
-            # Выбор счета
             accounts = self.container.bank_account_facade.get_all_accounts()
             if not accounts:
                 print("Нет доступных счетов! Сначала создайте счет.")
@@ -413,17 +408,14 @@ class ConsoleApp:
             bank_account_id_str = input("Введите ID счета: ")
             bank_account_id = int(bank_account_id_str)
 
-            # Проверка существования счета
             account = self.container.bank_account_facade.get_account(bank_account_id)
             if not account:
                 print(f"Счет с ID {bank_account_id} не найден!")
                 return
 
-            # Ввод суммы
             amount_str = input("Введите сумму: ")
             amount = Decimal(amount_str)
 
-            # Выбор категории (опционально)
             categories = [
                 c
                 for c in self.container.category_facade.get_all_categories()
@@ -439,7 +431,6 @@ class ConsoleApp:
                 category_id_str = input("Введите ID категории (или оставьте пустым): ")
                 if category_id_str:
                     category_id = int(category_id_str)
-                    # Проверка существования категории
                     category = self.container.category_facade.get_category(category_id)
                     if not category or category.type != type:
                         print(
@@ -447,10 +438,8 @@ class ConsoleApp:
                         )
                         return
 
-            # Ввод описания (опционально)
             description = input("Введите описание операции (или оставьте пустым): ")
 
-            # Создание операции
             operation = self.container.operation_facade.create_operation(
                 type, bank_account_id, amount, datetime.now(), category_id, description
             )
@@ -464,7 +453,6 @@ class ConsoleApp:
     @measure_execution_time("Отображение списка операций")
     def list_operations(self):
         try:
-            # Используем паттерн Команда с декоратором для измерения производительности
             command = GetOperationsCommand(self.container.operation_facade)
             decorated_command = PerformanceDecorator(
                 command, "Получение списка операций", self.container.performance_tracker
@@ -558,7 +546,6 @@ class ConsoleApp:
         except ValueError:
             print("Ошибка: ID должен быть числом")
 
-    # Функции для аналитики
     def balance_for_period(self):
         try:
             print("\nВведите начальную дату (в формате YYYY-MM-DD):")
@@ -607,7 +594,6 @@ class ConsoleApp:
         except ValueError:
             print("Ошибка: некорректный формат даты")
 
-    # Функции для экспорта данных
     def export_operations(self, format_type: str):
         operations = self.container.operation_facade.get_all_operations()
         if not operations:
@@ -664,84 +650,6 @@ class ConsoleApp:
         except Exception as e:
             print(f"Ошибка при экспорте данных: {e}")
 
-    # Демонстрационные данные для быстрого тестирования
-    def initialize_demo_data(self):
-        # Создаем счета
-        main_account = self.container.bank_account_facade.create_account(
-            "Основной счет", Decimal("5000.0")
-        )
-        savings_account = self.container.bank_account_facade.create_account(
-            "Сберегательный счет", Decimal("10000.0")
-        )
-
-        # Создаем категории доходов
-        salary = self.container.category_facade.create_category(
-            "Зарплата", TransactionType.INCOME
-        )
-        cashback = self.container.category_facade.create_category(
-            "Кэшбэк", TransactionType.INCOME
-        )
-
-        # Создаем категории расходов
-        food = self.container.category_facade.create_category(
-            "Кафе", TransactionType.EXPENSE
-        )
-        health = self.container.category_facade.create_category(
-            "Здоровье", TransactionType.EXPENSE
-        )
-        transport = self.container.category_facade.create_category(
-            "Транспорт", TransactionType.EXPENSE
-        )
-
-        # Создаем операции
-        now = datetime.now()
-
-        # Доходы
-        self.container.operation_facade.create_operation(
-            TransactionType.INCOME,
-            main_account.id,
-            Decimal("50000.0"),
-            now.replace(day=5),
-            salary.id,
-            "Зарплата за месяц",
-        )
-        self.container.operation_facade.create_operation(
-            TransactionType.INCOME,
-            main_account.id,
-            Decimal("500.0"),
-            now.replace(day=10),
-            cashback.id,
-            "Кэшбэк за покупки",
-        )
-
-        # Расходы
-        self.container.operation_facade.create_operation(
-            TransactionType.EXPENSE,
-            main_account.id,
-            Decimal("1500.0"),
-            now.replace(day=12),
-            food.id,
-            "Обед в ресторане",
-        )
-        self.container.operation_facade.create_operation(
-            TransactionType.EXPENSE,
-            main_account.id,
-            Decimal("3000.0"),
-            now.replace(day=15),
-            health.id,
-            "Визит к врачу",
-        )
-        self.container.operation_facade.create_operation(
-            TransactionType.EXPENSE,
-            main_account.id,
-            Decimal("500.0"),
-            now.replace(day=20),
-            transport.id,
-            "Такси",
-        )
-
-        print("Демонстрационные данные успешно созданы!")
-
     @measure_execution_time("Импорт операций")
     def import_operations(self, format_type: str):
         try:
@@ -765,30 +673,25 @@ class ConsoleApp:
                 print(f"Неподдерживаемый формат: {format_type}")
                 return
 
-            # Перед импортом данных выводим список существующих счетов
             print("\nСуществующие счета перед импортом:")
             existing_accounts = self.container.bank_account_facade.get_all_accounts()
             for acc in existing_accounts:
                 print(f"  ID: {acc.id}, Название: {acc.name}, Баланс: {acc.balance}")
 
-            # Первый проход - собираем информацию о всех уникальных счетах
             unique_accounts = {}
             for item in data:
                 if "bank_account_id" in item:
                     account_id = int(item.get("bank_account_id", 0))
                     account_name = item.get("account_name", f"Счет {account_id}")
 
-                    # Запоминаем имя счета по ID
                     unique_accounts[account_id] = account_name
 
             print(f"\nУникальные счета в импортируемых данных: {len(unique_accounts)}")
             for acc_id, acc_name in unique_accounts.items():
                 print(f"  ID: {acc_id}, Название: {acc_name}")
 
-            # Создаем все необходимые счета до начала обработки операций
             created_accounts = {}
             for account_id, account_name in unique_accounts.items():
-                # Проверяем, существует ли уже счет с таким ID
                 existing_account = self.container.bank_account_facade.get_account(
                     account_id
                 )
@@ -799,23 +702,17 @@ class ConsoleApp:
                     )
                     created_accounts[account_id] = existing_account
                 else:
-                    # Создаем новый счет с заданным ID
                     print(f"Создаю новый счет: {account_name} (ID: {account_id})")
 
-                    # Создаем счет с нулевым ID (как заглушку)
                     new_account = self.container.entity_factory.create_bank_account(
                         account_name
                     )
 
-                    # Устанавливаем нужный ID и добавляем напрямую в репозиторий
                     new_account.id = account_id
 
-                    # Важно: добавляем через репозиторий, а не через фасад!
-                    # Фасад может создать новый объект и сбросить ID
                     account = self.container.bank_account_repository.add(new_account)
                     created_accounts[account_id] = account
 
-            # Теперь обрабатываем операции, используя созданные счета
             imported_count = 0
             created_categories = {}
 
@@ -823,28 +720,23 @@ class ConsoleApp:
                 try:
                     account_id = int(item.get("bank_account_id", 0))
 
-                    # Получаем созданный или существующий счет по ID
                     account = created_accounts.get(account_id)
                     if not account:
                         print(f"Ошибка: счет с ID {account_id} не найден!")
                         continue
 
-                    # Обработка категории
                     category_id = None
                     if "category_id" in item and item["category_id"]:
                         category_id = int(item["category_id"])
 
-                        # Проверяем, создавали ли мы уже эту категорию
                         if category_id in created_categories:
                             category = created_categories[category_id]
                         else:
-                            # Проверяем, существует ли категория в БД
                             category = self.container.category_facade.get_category(
                                 category_id
                             )
 
                             if not category:
-                                # Создаем новую категорию с заданным ID
                                 category_name = item.get(
                                     "category_name", f"Категория {category_id}"
                                 )
@@ -854,34 +746,27 @@ class ConsoleApp:
                                     f"Создаю новую категорию: {category_name} (ID: {category_id}, тип: {category_type.value})"
                                 )
 
-                                # Создаем категорию с нулевым ID (как заглушку)
                                 new_category = (
                                     self.container.entity_factory.create_category(
                                         category_name, category_type
                                     )
                                 )
 
-                                # Устанавливаем нужный ID
                                 new_category.id = category_id
 
-                                # Добавляем через репозиторий
                                 category = self.container.category_repository.add(
                                     new_category
                                 )
                                 created_categories[category_id] = category
 
-                    # Подготовка данных для создания операции
                     operation_type = item.get("type", TransactionType.INCOME)
                     amount = Decimal(str(item.get("amount", "0")))
                     date = item.get("date", datetime.now())
                     description = item.get("description", "")
-
-                    # Проверяем, достаточно ли средств для расходной операции
                     if (
                         operation_type == TransactionType.EXPENSE
                         and amount > account.balance
                     ):
-                        # Автоматически пополняем счет
                         needed_deposit = amount - account.balance
                         account.deposit(needed_deposit)
                         print(
@@ -889,7 +774,6 @@ class ConsoleApp:
                         )
                         self.container.bank_account_repository.update(account)
 
-                    # Создаем операцию через фасад (он обновит баланс счета)
                     self.container.operation_facade.create_operation(
                         operation_type,
                         account.id,
@@ -903,13 +787,11 @@ class ConsoleApp:
                 except Exception as e:
                     print(f"Ошибка при импорте операции: {e}")
 
-            # Выводим итоговую информацию
             print(f"\nИтоги импорта:")
             print(f"  Счетов: {len(created_accounts)}")
             print(f"  Категорий: {len(created_categories)}")
             print(f"  Операций: {imported_count} из {len(data)}")
 
-            # Выводим информацию о счетах после импорта
             print("\nСчета после импорта:")
             updated_accounts = self.container.bank_account_facade.get_all_accounts()
             for acc in updated_accounts:
@@ -978,9 +860,6 @@ class ConsoleApp:
             print(f"  Количество выполнений: {stats['executions']}")
 
     def run(self):
-        # Инициализация демо-данных (раскомментируйте, если нужно)
-        # self.initialize_demo_data()
-
         while self.running:
             self.display_menu()
             choice = input("Выберите действие: ")

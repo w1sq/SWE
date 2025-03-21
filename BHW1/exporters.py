@@ -10,13 +10,11 @@ from models import TransactionType
 
 class DataExporter(ABC):
     def export_data(self, data: List[Dict]) -> str:
-        # Шаблонный метод
         prepared_data = self._prepare_data(data)
         exported = self._export(prepared_data)
         return exported
 
     def _prepare_data(self, data: List[Dict]) -> List[Dict]:
-        # Общая для всех обработка (например, преобразование Decimal в строки)
         prepared = []
         for item in data:
             prepared_item = {}

@@ -1,23 +1,22 @@
-from abc import ABC, abstractmethod
-from typing import List, Dict, Any
-from decimal import Decimal
-from datetime import datetime
+import io
 import csv
 import json
 import yaml
-import io
+from decimal import Decimal
+from datetime import datetime
+from typing import List, Dict, Any
+from abc import ABC, abstractmethod
+
 from models import TransactionType
 
 
 class DataImporter(ABC):
     def import_data(self, data_str: str) -> List[Dict[str, Any]]:
-        # Шаблонный метод
         raw_data = self._import(data_str)
         prepared_data = self._prepare_data(raw_data)
         return prepared_data
 
     def _prepare_data(self, data: List[Dict]) -> List[Dict]:
-        # Общая для всех обработка (например, преобразование строк в нужные типы)
         prepared = []
         for item in data:
             prepared_item = {}
@@ -33,7 +32,7 @@ class DataImporter(ABC):
                                 value, "%Y-%m-%d %H:%M:%S"
                             )
                         except ValueError:
-                            prepared_item[key] = datetime.now()  # Fallback
+                            prepared_item[key] = datetime.now()
                 elif key == "type" and isinstance(value, str):
                     try:
                         prepared_item[key] = TransactionType(value)

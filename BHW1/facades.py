@@ -90,7 +90,6 @@ class OperationFacade:
         )
         self.validator.validate(operation)
 
-        # Обновляем баланс счета
         account = self.account_repository.get_by_id(bank_account_id)
         if not account:
             raise ValueError(f"Счет с ID {bank_account_id} не найден")

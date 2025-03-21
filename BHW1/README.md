@@ -154,7 +154,8 @@ finance_module/
 ├── container.py          # Контейнер для управления зависимостями
 ├── console_app.py        # Консольный интерфейс пользователя
 ├── main.py               # Точка входа в приложение
-└── requirements.txt      # Зависимости проекта
+├── requirements.txt      # Зависимости проекта
+└── tests/                # Тесты
 ```
 
 ## Инструкция по запуску
@@ -182,6 +183,11 @@ pip install -r requirements.txt
 4. Запустите приложение:
 ```bash
 python main.py
+```
+
+5. Запустите тесты:
+```bash
+PYTHONPATH=. pytest --cov=. --cov-report=term
 ```
 
 ## Заключение

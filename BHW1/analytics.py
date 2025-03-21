@@ -7,7 +7,7 @@ from repositories import (
     InMemoryCategoryRepository,
     InMemoryBankAccountRepository,
 )
-from models import TransactionType, BankAccount, Operation
+from models import TransactionType, BankAccount
 
 
 class AnalyticsService:
@@ -70,18 +70,15 @@ class AnalyticsService:
         operations = self.operation_repository.get_all()
         discrepancies = []
 
-        # Группируем операции по счетам
         account_operations = {}
         for op in operations:
             if op.bank_account_id not in account_operations:
                 account_operations[op.bank_account_id] = []
             account_operations[op.bank_account_id].append(op)
 
-        # Проверяем каждый счет
         for account in accounts:
             calculated_balance = Decimal("0.0")
 
-            # Учитываем все операции для этого счета
             ops = account_operations.get(account.id, [])
             for op in ops:
                 if op.type == TransactionType.INCOME:
@@ -89,7 +86,6 @@ class AnalyticsService:
                 else:
                     calculated_balance -= op.amount
 
-            # Если есть расхождение, добавляем в список
             if account.balance != calculated_balance:
                 discrepancies.append((account, account.balance, calculated_balance))
 
@@ -104,10 +100,8 @@ class AnalyticsService:
         fixed_accounts = []
 
         for account, old_balance, new_balance in discrepancies:
-            # Сохраняем старое значение для отчета
             fixed_accounts.append((account, old_balance, new_balance))
 
-            # Исправляем баланс
             account.balance = new_balance
             self.account_repository.update(account)
 
