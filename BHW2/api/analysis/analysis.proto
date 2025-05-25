@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package proto ;
+
+option go_package = "github.com/w1sq/SWE/BHW2/api/analysis;analysis";
+
+service AnalysisService {
+rpc AnalyzeFile(AnalyzeFileRequest) returns (AnalyzeFileResponse) ;
+}
+
+message AnalyzeFileRequest {
+string file_id = 1           ;
+}
+
+message AnalyzeFileResponse {
+string result = 1             ;
+}
